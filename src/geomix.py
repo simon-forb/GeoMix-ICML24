@@ -48,7 +48,8 @@ def geomix(dataset, args):
         _type_: output graph dataset
     """
     ## randomly select samples and mixup by geomix
-    data_out = dataset
+    # data_out = dataset
+    mixup_graphs = []
     print('Mixup via Low-rank GW...')
     num_mixup = max(int(args.aug_ratio * len(dataset)), 1)
     index = cand_ind(dataset, num_mixup)
@@ -73,8 +74,10 @@ def geomix(dataset, args):
         mixup_size.append(coarsen_adj1.shape[0])
         y1 = dataset[ele[0]].y
         y2 = dataset[ele[1]].y
-        
-        if args.sample_dist == 'uniform':
+
+        if args.fixed_lam is not None:
+            lam_list = np.ones(args.num_graphs) * args.fixed_lam
+        elif args.sample_dist == 'uniform':
             lam_list = np.random.uniform(low=args.uniform_min, high=args.uniform_max, size=(args.num_graphs,))
         elif args.sample_dist  == 'beta':
             lam_list = np.random.beta(args.beta_alpha, args.beta_beta, size = (args.num_graphs,))
@@ -87,7 +90,14 @@ def geomix(dataset, args):
             mixed_adj.masked_fill_(mixed_adj.le(args.clip_eps), 0) # mask out edges with small weights
             aug_list.append(mixed_adj)
             edge_index, edge_weight = dense_to_sparse(mixed_adj)
-            data_out.append(Data(x = mixed_x, y = (1-lam) * y1 + lam * y2, edge_index = edge_index, edge_weight = edge_weight, num_nodes = mixup_size[-1], edge_attr = None))
+
+            mixup_graph = Data(x=mixed_x, y=(1 - lam) * y1 + lam * y2, edge_index=edge_index, edge_weight=edge_weight, num_nodes=mixup_size[-1], edge_attr=None)
+            mixup_graph_dict = mixup_graph.to_dict()
+            mixup_graphs.append(dict(
+                mixup_graph_dict=mixup_graph_dict,
+                lam=lam,
+                source_indices=(ele[0], ele[1]),
+            ))
 
         if args.vis_G:  # visulize mixup graphs
             print(lam_list)
@@ -97,4 +107,4 @@ def geomix(dataset, args):
             plt.savefig('mix.png',format='png',transparent = True)
             plt.show()
     print('Average mixup graph size : {:.2f}'.format(np.mean(mixup_size)))
-    return data_out
+    return mixup_graphs

@@ -1,4 +1,9 @@
 import os
+import sys
+import pickle
+
+import yaml
+
 os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
 import torch
@@ -38,6 +43,7 @@ parser.add_argument("--beta_beta", type=float, default=0.5, help='Beta(alpha, be
 parser.add_argument("--uniform_min", type=float, default=0.0, help='Uniform(min,max)')
 parser.add_argument("--uniform_max", type=float, default=5e-2, help='Uniform(min,max)')
 parser.add_argument("--clip_eps", type=float, default=1e-3, help='threshold to filter out zero columns')
+parser.add_argument("--fixed_lam", type=float, help="fixed lambda for mixup")
 
 ## other arguments
 parser.add_argument("--vis_P", type=bool, default=False, help='visualize the permutation matrix')
@@ -106,6 +112,21 @@ def main(args):
     dataset = TUDataset(root='data/TUDataset', name=args.data)
     dataset = list(dataset)
     dataset, num_classes = preprocess(dataset)
+
+    mixup_graphs = geomix(dataset, args)
+
+    # Store mixup graphs to file
+    path = os.path.join("export", args.data)
+    os.makedirs(path, exist_ok=True)
+    timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
+    with open(os.path.join(path, timestamp + "_graphs.pkl"), "wb") as f:
+        pickle.dump(mixup_graphs, f)
+
+    # Store metadata to file
+    with open(os.path.join(path, timestamp + "_metadata.pkl"), "w") as f:
+        yaml.dump(vars(args), f)
+
+    sys.exit(0)
 
     kf = KFold(n_splits=10, shuffle = True, random_state = random_state)
     acc = []

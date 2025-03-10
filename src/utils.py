@@ -3,6 +3,7 @@ import networkx as nx
 from scipy.sparse.csgraph import shortest_path
 import torch
 import matplotlib.pyplot as plt
+from torch_geometric.transforms import Constant
 from torch_geometric.utils import degree, to_dense_adj, dense_to_sparse
 import torch.nn.functional as F
 import copy
@@ -54,23 +55,29 @@ def preprocess(data_in):
     num_classes = len(y_set)
     for data in dataset:
         data.y = F.one_hot(data.y, num_classes=num_classes).to(torch.float)[0].view(-1, num_classes)
-    if is_plain:    # use node degree as attributes
-        max_degree = 0
-        degs = []
-        for data in dataset:
-            degs += [degree(data.edge_index[0], dtype=torch.long)]
-            max_degree = max( max_degree, degs[-1].max().item() )
 
-        if max_degree < 2000:
-            for data in dataset:
-                degs = degree(data.edge_index[0], dtype=torch.long)
-                data.x = F.one_hot(degs, num_classes=max_degree+1).to(torch.float)
-        else:
-            deg = torch.cat(degs, dim=0).to(torch.float)
-            mean, std = deg.mean().item(), deg.std().item()
-            for data in dataset:
-                degs = degree(data.edge_index[0], dtype=torch.long)
-                data.x = ( (degs - mean) / std ).view( -1, 1 )
+    if is_plain:    # use node degree as attributes
+        const_transform = Constant()
+        for data in dataset:
+            transformed_data = const_transform(data)
+            data.x = transformed_data.x
+
+        # max_degree = 0
+        # degs = []
+        # for data in dataset:
+        #     degs += [degree(data.edge_index[0], dtype=torch.long)]
+        #     max_degree = max( max_degree, degs[-1].max().item() )
+
+        # if max_degree < 2000:
+        # for data in dataset:
+        #     degs = degree(data.edge_index[0], dtype=torch.long)
+        #     data.x = F.one_hot(degs, num_classes=max_degree+1).to(torch.float)
+        # else:
+        #     deg = torch.cat(degs, dim=0).to(torch.float)
+        #     mean, std = deg.mean().item(), deg.std().item()
+        #     for data in dataset:
+        #         degs = degree(data.edge_index[0], dtype=torch.long)
+        #         data.x = ( (degs - mean) / std ).view( -1, 1 )
     
     for data in dataset:
         adj = to_dense_adj(data.edge_index)

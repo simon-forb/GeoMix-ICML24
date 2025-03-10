@@ -6,6 +6,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from utils import draw_graph, get_class_label
 from geomix_utils import lgw, proj_graph
+from graph_exporter.typing import MixupItem
 
 
 def cand_ind(dataset, num_mixup):
@@ -93,9 +94,9 @@ def geomix(dataset, args):
 
             mixup_graph = Data(x=mixed_x, y=(1 - lam) * y1 + lam * y2, edge_index=edge_index, edge_weight=edge_weight, num_nodes=mixup_size[-1], edge_attr=None)
             mixup_graph_dict = mixup_graph.to_dict()
-            mixup_graphs.append(dict(
-                mixup_graph_dict=mixup_graph_dict,
-                lam=lam,
+            mixup_graphs.append(MixupItem(
+                graph_dict=mixup_graph_dict,
+                lam=lam.item(),
                 source_indices=(ele[0], ele[1]),
             ))
 

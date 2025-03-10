@@ -1,8 +1,7 @@
 import os
-import sys
-import pickle
 
-import yaml
+from graph_exporter.export import export
+from graph_exporter.typing import GeoMixConfig
 
 os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
@@ -52,7 +51,7 @@ parser.add_argument('--cuda', type=int, default=1)
 args = parser.parse_args()
 
 args.device = torch.device("cuda:{}".format(args.cuda) if torch.cuda.is_available() else "cpu")
-random_state = 1234
+random_state = 0
 
 
 def mixup_cross_entropy_loss(input, target, size_average=True):
@@ -115,18 +114,21 @@ def main(args):
 
     mixup_graphs = geomix(dataset, args)
 
-    # Store mixup graphs to file
-    path = os.path.join("export", args.data)
-    os.makedirs(path, exist_ok=True)
-    timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
-    with open(os.path.join(path, timestamp + "_graphs.pkl"), "wb") as f:
-        pickle.dump(mixup_graphs, f)
-
-    # Store metadata to file
-    with open(os.path.join(path, timestamp + "_metadata.pkl"), "w") as f:
-        yaml.dump(vars(args), f)
-
-    sys.exit(0)
+    export(
+        mixup_graphs,
+        args.data,
+        GeoMixConfig(
+            seed=random_state,
+            num_graphs=args.num_graphs,
+            num_nodes=args.num_nodes,
+            alpha_fgw=args.alpha_fgw,
+            sample_dist=args.sample_dist,
+            mixup_alpha=args.beta_alpha,
+            uniform_min=args.uniform_min,
+            uniform_max=args.uniform_max,
+            clip_eps=args.clip_eps,
+        ),
+    )
 
     kf = KFold(n_splits=10, shuffle = True, random_state = random_state)
     acc = []

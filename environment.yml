@@ -179,7 +179,6 @@ dependencies:
       - attrs==25.1.0
       - frozenlist==1.5.0
       - fsspec==2025.3.0
-      - graph-exporter==0.0.1
       - multidict==6.1.0
       - propcache==0.3.0
       - psutil==7.0.0

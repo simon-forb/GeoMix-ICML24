@@ -24,7 +24,7 @@ warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser()
 ## Training parameters
-parser.add_argument("--data", type=str, default='MUTAG', choices= 'IMDB-BINARY|IMDB-MULTI|PROTEINS|MUTAG|PTC_MR|MSRC_9')
+parser.add_argument("--data", type=str, default='MUTAG', choices='IMDB-BINARY|IMDB-MULTI|PROTEINS|MUTAG|ENZYMES|PTC_MR|MSRC_9')
 parser.add_argument("--model", type=str, default='GCN', choices= 'GCN|GIN|APPNP')
 parser.add_argument("--epochs", type=int, default=300)
 parser.add_argument("--batch", type=int, default=256)

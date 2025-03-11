@@ -60,8 +60,8 @@ def geomix(dataset, args):
         try:
             adj1 = to_dense_adj(edge_index = dataset[ele[0]].edge_index, max_num_nodes = dataset[ele[0]].num_nodes).squeeze().to(args.device)
             adj2 = to_dense_adj(edge_index = dataset[ele[1]].edge_index, max_num_nodes = dataset[ele[1]].num_nodes).squeeze().to(args.device)
-            x1 = dataset[ele[0]].x.squeeze().to(args.device)
-            x2 = dataset[ele[1]].x.squeeze().to(args.device)
+            x1 = dataset[ele[0]].x.to(args.device)
+            x2 = dataset[ele[1]].x.to(args.device)
             rank = args.num_nodes
             Q, R, g = lgw(adj1, adj2, x1, x2, rank, alpha = args.alpha_fgw)
 

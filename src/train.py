@@ -108,7 +108,7 @@ class EarlyStopping:
 
 
 def main(args):
-    dataset = TUDataset(root='data/TUDataset', name=args.data)
+    dataset = TUDataset(root='data/TUDataset', name=args.data, use_node_attr=True)
     dataset = list(dataset)
     dataset, num_classes = preprocess(dataset)
 

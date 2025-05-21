@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Meta
-dataset="MUTAG"
+dataset="NCI1"
 aug_ratio="0.1"
 running_jobs=0
-max_jobs=4
+max_jobs=1
 
 # HPs
-num_nodes=(20 40)
+num_nodes=(20)
 mixup_alphas=("0.1" "0.3" "0.5")
 
 for mixup_alpha in "${mixup_alphas[@]}"; do

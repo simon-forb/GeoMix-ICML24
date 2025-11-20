@@ -1,4 +1,5 @@
 import torch
+import time
 from torch_geometric.utils import to_dense_adj, dense_to_sparse
 from torch_geometric.data import Data
 import numpy as np
@@ -58,6 +59,7 @@ def geomix(dataset, args):
     
     for ele in tqdm(index):
         try:
+            start_time = time.perf_counter()
             adj1 = to_dense_adj(edge_index = dataset[ele[0]].edge_index, max_num_nodes = dataset[ele[0]].num_nodes).squeeze().to(args.device)
             adj2 = to_dense_adj(edge_index = dataset[ele[1]].edge_index, max_num_nodes = dataset[ele[1]].num_nodes).squeeze().to(args.device)
             x1 = dataset[ele[0]].x.to(args.device)
@@ -99,6 +101,7 @@ def geomix(dataset, args):
                     graph_dict=mixup_graph_dict,
                     lam=lam.item(),
                     source_indices=(ele[0], ele[1]),
+                    creation_time_us=int((time.perf_counter() - start_time) * 1e6),
                 ))
 
             if args.vis_G:  # visulize mixup graphs
